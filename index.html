@@ -8,10 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://js.paystack.co/v1/inline.js"></script>
 
-  <!-- FIREBASE (CORRECT VERSION) -->
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, updateDoc, doc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
@@ -23,8 +25,11 @@
     const db = getFirestore(app);
 
     window.db = db;
-    window.addDoc = addDoc;
     window.collection = collection;
+    window.addDoc = addDoc;
+    window.getDocs = getDocs;
+    window.updateDoc = updateDoc;
+    window.doc = doc;
   </script>
 
   <style>
@@ -38,19 +43,25 @@
 <body class="bg-gray-50">
 
   <!-- HEADER -->
-  <div class="header p-4 flex items-center justify-between">
+  <div class="header p-4 flex justify-between items-center">
     <div>
-      <h1 class="text-2xl font-bold">🍲 Maryam's Kitchen</h1>
-      <p class="text-sm">Hot Nigerian Meals • Lagos / Abuja</p>
+      <h1 class="text-xl font-bold">🍲 Maryam's Kitchen</h1>
+      <p class="text-sm">Hot Nigerian Meals</p>
     </div>
-    <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-4 py-1 rounded-full text-sm">
-      Rider Mode
-    </button>
+
+    <div class="flex gap-2">
+      <button onclick="showScreen('admin')" class="bg-black text-white px-3 py-1 rounded text-sm">
+        Admin
+      </button>
+      <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-3 py-1 rounded text-sm">
+        Rider
+      </button>
+    </div>
   </div>
 
   <!-- HOME -->
   <div id="home" class="screen active p-4">
-    <h2 class="text-3xl font-bold mt-6">Welcome back!</h2>
+    <h2 class="text-2xl font-bold mt-6">Welcome</h2>
     <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6">
       Browse Menu
     </button>
@@ -58,7 +69,7 @@
 
   <!-- MENU -->
   <div id="menu" class="screen p-4">
-    <h2 class="text-2xl font-bold mb-4">Our Menu</h2>
+    <h2 class="text-xl font-bold mb-4">Menu</h2>
     <div id="menu-list" class="space-y-4"></div>
 
     <button onclick="showScreen('cart')" 
@@ -66,23 +77,22 @@
       🛒 Cart
     </button>
 
-    <button onclick="showScreen('home')" class="mt-6 w-full py-3 border rounded-2xl">
+    <button onclick="showScreen('home')" class="mt-6 w-full border py-3 rounded-2xl">
       ← Back
     </button>
   </div>
 
   <!-- CART -->
   <div id="cart" class="screen p-4">
-    <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
-
-    <div id="cart-list" class="space-y-4"></div>
+    <h2 class="text-xl font-bold mb-4">Your Cart</h2>
+    <div id="cart-list" class="space-y-3"></div>
 
     <div class="mt-6 space-y-3">
       <input id="customer-name" placeholder="Full Name" class="w-full p-3 border rounded-xl">
       <input id="customer-phone" placeholder="Phone Number" class="w-full p-3 border rounded-xl">
       <input id="customer-address" placeholder="Delivery Address" class="w-full p-3 border rounded-xl">
 
-      <div class="flex justify-between font-bold text-xl">
+      <div class="flex justify-between font-bold text-lg">
         <span>Total</span>
         <span id="total">₦0</span>
       </div>
@@ -95,11 +105,21 @@
 
   <!-- TRACK -->
   <div id="track" class="screen p-4">
-    <h2 class="text-2xl font-bold">Order Tracking</h2>
-    <p>Order #<span id="order-number">---</span></p>
-    <p class="mt-4 text-orange-600 font-bold">Out for delivery</p>
-    <button onclick="showScreen('home')" class="w-full py-3 border mt-6 rounded-2xl">
-      Back Home
+    <h2 class="text-xl font-bold">Tracking</h2>
+    <p>Order #: <span id="order-number">---</span></p>
+    <p class="text-orange-600 font-bold mt-3">Processing...</p>
+    <button onclick="showScreen('home')" class="w-full border py-3 mt-6 rounded-2xl">
+      Back
+    </button>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin" class="screen p-4">
+    <h2 class="text-xl font-bold mb-4">Admin Dashboard</h2>
+    <div id="orders-list" class="space-y-4"></div>
+
+    <button onclick="showScreen('home')" class="w-full border py-3 mt-6 rounded-2xl">
+      ← Back
     </button>
   </div>
 
@@ -147,7 +167,7 @@
 
       let total = 0;
 
-      cart.forEach((item, i) => {
+      cart.forEach(item => {
         total += item.price;
 
         const div = document.createElement('div');
@@ -185,7 +205,6 @@
         ref: "MK-" + Math.floor(Math.random() * 1000000000),
 
         callback: async function(response) {
-
           const orderData = {
             reference: response.reference,
             name,
@@ -208,7 +227,6 @@
             localStorage.setItem('cart', JSON.stringify(cart));
 
             showScreen('track');
-
           } catch (e) {
             alert("Error saving order");
           }
@@ -218,12 +236,49 @@
       handler.openIframe();
     }
 
+    async function loadOrders() {
+      const container = document.getElementById('orders-list');
+      container.innerHTML = "Loading...";
+
+      const snapshot = await window.getDocs(window.collection(window.db, "orders"));
+      container.innerHTML = "";
+
+      snapshot.forEach(docSnap => {
+        const o = docSnap.data();
+
+        const div = document.createElement('div');
+        div.className = "bg-white p-4 rounded-2xl shadow";
+
+        div.innerHTML = `
+          <p><strong>${o.name}</strong> (${o.phone})</p>
+          <p>${o.address}</p>
+          <p>₦${o.total}</p>
+          <p>Status: ${o.status}</p>
+
+          <div class="flex gap-2 mt-3">
+            <button onclick="updateStatus('${docSnap.id}','cooking')" class="bg-yellow-500 text-white px-2 py-1 rounded">Cooking</button>
+            <button onclick="updateStatus('${docSnap.id}','delivering')" class="bg-blue-500 text-white px-2 py-1 rounded">Delivering</button>
+            <button onclick="updateStatus('${docSnap.id}','completed')" class="bg-green-600 text-white px-2 py-1 rounded">Done</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    async function updateStatus(id, status) {
+      const ref = window.doc(window.db, "orders", id);
+      await window.updateDoc(ref, { status });
+      loadOrders();
+    }
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
 
       if (id === 'menu') renderMenu();
       if (id === 'cart') renderCart();
+      if (id === 'admin') loadOrders();
     }
   </script>
 
