@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maryam's Kitchen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF6B00">
+  <style>
+    body { font-family: system-ui; }
+    .screen { display: none; }
+    .active { display: block; }
+    .header { background: linear-gradient(#FF6B00, #FF8C00); color: white; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <div class="header p-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold">🍲 Maryam's Kitchen</h1>
+      <p class="text-sm">Hot Nigerian Meals • Lagos / Abuja</p>
+    </div>
+    <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-4 py-1 rounded-full text-sm font-medium">Rider Mode</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen active p-4">
+    <img src="https://picsum.photos/id/1015/800/400" class="w-full rounded-2xl shadow" alt="restaurant">
+    <h2 class="text-3xl font-bold mt-6">Welcome back!</h2>
+    <p class="text-gray-600">What would you like today?</p>
+    <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6 text-lg">Browse Menu</button>
+    <button onclick="showScreen('track')" class="w-full border border-orange-500 text-orange-500 py-4 rounded-2xl mt-3 text-lg">Track My Order</button>
+  </div>
+
+  <!-- MENU -->
+  <div id="menu" class="screen p-4">
+    <h2 class="text-2xl font-bold mb-4">Our Menu</h2>
+    <div id="menu-list" class="space-y-4"></div>
+    <button onclick="showScreen('home')" class="mt-6 w-full py-3 border rounded-2xl">← Back</button>
+  </div>
+
+  <!-- CART -->
+  <div id="cart" class="screen p-4">
+    <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+    <div id="cart-list" class="space-y-4"></div>
+    <div class="mt-8 border-t pt-4">
+      <div class="flex justify-between text-xl font-bold"><span>Total</span><span id="total">₦0</span></div>
+      <button onclick="checkout()" class="w-full bg-green-600 text-white py-4 rounded-2xl mt-6 text-lg">Pay with Paystack</button>
+      <button onclick="showScreen('menu')" class="w-full py-3 border rounded-2xl mt-3">Add more items</button>
+    </div>
+  </div>
+
+  <!-- TRACK ORDER -->
+  <div id="track" class="screen p-4">
+    <h2 class="text-2xl font-bold">Order Tracking</h2>
+    <p>Order #<span id="order-number" class="font-mono">MK-8742</span></p>
+    <div class="bg-white p-4 rounded-2xl shadow mt-4">
+      <div class="flex justify-between"><span>Status:</span><span id="status" class="font-bold text-orange-600">Out for delivery</span></div>
+      <div class="h-80 mt-6 bg-gray-100 rounded-xl overflow-hidden">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d3.3792!3d6.5244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b2ae68280c1%3A0x0!2zNi41MjQ0LDQuMzc5Mg!5e0!3m2!1sen!2sng!4v1740000000000" width="100%" height="100%" style="border:0;" allowfullscreen></iframe>
+      </div>
+      <p class="text-center text-sm mt-3">🚀 Optimized route • 28 minutes (traffic-aware)</p>
+    </div>
+    <button onclick="showScreen('home')" class="w-full py-3 border rounded-2xl mt-8">← Back</button>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const menuItems = [
+      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof with grilled chicken"},
+      {id:2, name:"Egusi Soup + Fufu", price:3200, desc:"Classic Egusi with semo"},
+      {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice"},
+      {id:4, name:"Pepper Soup", price:1500, desc:"Hot goat pepper soup"},
+      {id:5, name:"Moi Moi + Fish", price:1200, desc:"Steamed bean pudding"}
+    ];
+
+    function renderMenu() {
+      const container = document.getElementById('menu-list');
+      container.innerHTML = '';
+      menuItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-4 rounded-2xl shadow flex justify-between items-center';
+        div.innerHTML = `
+          <div>
+            <h3 class="font-medium">${item.name}</h3>
+            <p class="text-sm text-gray-600">${item.desc}</p>
+            <p class="text-orange-600 font-bold">₦${item.price}</p>
+          </div>
+          <button onclick="addToCart(${item.id})" class="bg-orange-500 text-white px-6 py-2 rounded-xl text-sm">Add</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addToCart(id) {
+      const item = menuItems.find(i => i.id === id);
+      cart.push(item);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert(`${item.name} added to cart!`);
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cart-list');
+      container.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, i) => {
+        total += item.price;
+        const div = document.createElement('div');
+        div.className = 'flex justify-between bg-white p-4 rounded-2xl';
+        div.innerHTML = `<div><h3>${item.name}</h3><p>₦${item.price}</p></div><button onclick="removeFromCart(${i})" class="text-red-500">Remove</button>`;
+        container.appendChild(div);
+      });
+      document.getElementById('total').textContent = `₦${total}`;
+    }
+
+    function removeFromCart(i) {
+      cart.splice(i, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function checkout() {
+      if (cart.length === 0) return alert("Cart is empty");
+      alert("✅ Paystack opened!\n\nTest payment successful!\nYour order has been placed.");
+      document.getElementById('order-number').textContent = "MK-" + Math.floor(1000 + Math.random() * 9000);
+      cart = [];
+      localStorage.setItem('cart', JSON.stringify(cart));
+      showScreen('track');
+    }
+
+    function toggleRiderMode() {
+      if (confirm("Switch to Rider Mode?")) {
+        alert("🚀 Rider Mode ON\nYou have 2 new orders nearby.\nRoute optimized for traffic.");
+        showScreen('track');
+      }
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'menu') renderMenu();
+      if (id === 'cart') renderCart();
+    }
+  </script>
+</body>
+</html>
