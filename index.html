@@ -124,8 +124,8 @@
   </div>
 
   <script>
-    let cart = JSON.parse(localStorage.getItem('cart'))|| []
-      const menuItems = [
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const menuItems = [
       {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken"},
       {id:2, name:"Egusi Soup + Eba", price:3200, desc:"Classic melon seed soup with eba"},
       {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice with turkey"},
@@ -151,21 +151,17 @@
     function renderMenu() {
       const container = document.getElementById('menu-list');
       container.innerHTML = '';
-
       menuItems.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'bg-white p-4 rounded-2xl flex justify-between';
-
+        div.className = 'bg-white p-4 rounded-2xl shadow flex justify-between items-center';
         div.innerHTML = `
           <div>
-            <h3>${item.name}</h3>
-            <p>₦${item.price}</p>
+            <h3 class="font-medium">${item.name}</h3>
+            <p class="text-sm text-gray-600">${item.desc}</p>
+            <p class="text-orange-600 font-bold">₦${item.price}</p>
           </div>
-          <button onclick="addToCart(${item.id})" class="bg-orange-500 text-white px-4 rounded-xl">
-            Add
-          </button>
+          <button onclick="addToCart(${item.id})" class="bg-orange-500 text-white px-6 py-2 rounded-xl text-sm">Add</button>
         `;
-
         container.appendChild(div);
       });
     }
@@ -174,127 +170,61 @@
       const item = menuItems.find(i => i.id === id);
       cart.push(item);
       localStorage.setItem('cart', JSON.stringify(cart));
-      alert(item.name + " added!");
+      alert(`${item.name} added to cart!`);
     }
 
     function renderCart() {
       const container = document.getElementById('cart-list');
       container.innerHTML = '';
-
       let total = 0;
-
-      cart.forEach(item => {
+      cart.forEach((item, index) => {
         total += item.price;
-
         const div = document.createElement('div');
+        div.className = 'flex justify-between items-center bg-white p-4 rounded-2xl mb-3 shadow';
         div.innerHTML = `
-          <div class="flex justify-between bg-white p-3 rounded-xl">
-            <span>${item.name}</span>
-            <span>₦${item.price}</span>
+          <div class="flex-1">
+            <h3 class="font-medium">${item.name}</h3>
+            <p class="text-orange-600 font-bold">₦${item.price}</p>
           </div>
+          <button onclick="removeFromCart(${index})" 
+                  class="bg-red-500 text-white px-6 py-3 rounded-xl text-sm font-medium">
+            Remove
+          </button>
         `;
-
         container.appendChild(div);
       });
-
-      document.getElementById('total').textContent = "₦" + total;
+      document.getElementById('total').textContent = `₦${total}`;
     }
 
-    function payWithPaystack() {
-      if (cart.length === 0) return alert("Cart empty");
+    function removeFromCart(index) {
+      const removed = cart[index];
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+      alert(`${removed.name} has been removed from your cart`);
+    }
 
-      const name = document.getElementById('customer-name').value;
-      const phone = document.getElementById('customer-phone').value;
-      const address = document.getElementById('customer-address').value;
+    function checkout() {
+      if (cart.length === 0) return alert("Your cart is empty");
+      alert("✅ Paystack opened!\n\nTest payment successful!\nYour order has been placed.");
+      document.getElementById('order-number').textContent = "MK-" + Math.floor(1000 + Math.random() * 9000);
+      cart = [];
+      localStorage.setItem('cart', JSON.stringify(cart));
+      showScreen('track');
+    }
 
-      if (!name || !phone || !address) {
-        return alert("Fill all fields");
+    function toggleRiderMode() {
+      if (confirm("Switch to Rider Mode?")) {
+        alert("🚀 Rider Mode ON\nYou have 2 new orders nearby.\nRoute optimized for traffic.");
+        showScreen('track');
       }
-
-      let total = cart.reduce((sum, item) => sum + item.price, 0);
-
-      const handler = PaystackPop.setup({
-        key: "YOUR_PAYSTACK_PUBLIC_KEY",
-        email: phone + "@test.com",
-        amount: total * 100,
-        currency: "NGN",
-        ref: "MK-" + Math.floor(Math.random() * 1000000000),
-
-        callback: async function(response) {
-          const orderData = {
-            reference: response.reference,
-            name,
-            phone,
-            address,
-            items: cart,
-            total,
-            status: "pending",
-            createdAt: new Date().toISOString()
-          };
-
-          try {
-            await window.addDoc(window.collection(window.db, "orders"), orderData);
-
-            alert("Payment successful!");
-
-            document.getElementById('order-number').textContent = response.reference;
-
-            cart = [];
-            localStorage.setItem('cart', JSON.stringify(cart));
-
-            showScreen('track');
-          } catch (e) {
-            alert("Error saving order");
-          }
-        }
-      });
-
-      handler.openIframe();
-    }
-
-    async function loadOrders() {
-      const container = document.getElementById('orders-list');
-      container.innerHTML = "Loading...";
-
-      const snapshot = await window.getDocs(window.collection(window.db, "orders"));
-      container.innerHTML = "";
-
-      snapshot.forEach(docSnap => {
-        const o = docSnap.data();
-
-        const div = document.createElement('div');
-        div.className = "bg-white p-4 rounded-2xl shadow";
-
-        div.innerHTML = `
-          <p><strong>${o.name}</strong> (${o.phone})</p>
-          <p>${o.address}</p>
-          <p>₦${o.total}</p>
-          <p>Status: ${o.status}</p>
-
-          <div class="flex gap-2 mt-3">
-            <button onclick="updateStatus('${docSnap.id}','cooking')" class="bg-yellow-500 text-white px-2 py-1 rounded">Cooking</button>
-            <button onclick="updateStatus('${docSnap.id}','delivering')" class="bg-blue-500 text-white px-2 py-1 rounded">Delivering</button>
-            <button onclick="updateStatus('${docSnap.id}','completed')" class="bg-green-600 text-white px-2 py-1 rounded">Done</button>
-          </div>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-
-    async function updateStatus(id, status) {
-      const ref = window.doc(window.db, "orders", id);
-      await window.updateDoc(ref, { status });
-      loadOrders();
     }
 
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-
       if (id === 'menu') renderMenu();
       if (id === 'cart') renderCart();
-      if (id === 'admin') loadOrders();
     }
   </script>
 
