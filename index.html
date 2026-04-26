@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maryam's Kitchen</title>
+  <title>Deelag's Kitchen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="theme-color" content="#FF6B00">
   <style>
@@ -17,10 +17,11 @@
 </head>
 <body class="bg-gray-50">
 
+  <!-- HEADER -->
   <div class="header p-4 flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold">🍲 Maryam's Kitchen</h1>
-      <p class="text-sm">Hot Nigerian Meals • Lagos / Abuja</p>
+      <h1 class="text-2xl font-bold">🍲 Deelag's Kitchen</h1>
+      <p class="text-sm">Hot Nigerian Meals Delivered Fresh</p>
     </div>
     <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-4 py-1 rounded-full text-sm font-medium">Rider Mode</button>
   </div>
@@ -28,8 +29,12 @@
   <!-- HOME -->
   <div id="home" class="screen active p-4">
     <img src="https://picsum.photos/id/1015/800/400" class="w-full rounded-2xl shadow" alt="restaurant">
-    <h2 class="text-3xl font-bold mt-6">Welcome back!</h2>
-    <p class="text-gray-600">What would you like today?</p>
+    <div class="mt-6 bg-white p-4 rounded-2xl shadow">
+      <h2 class="text-3xl font-bold">Welcome to Deelag's Kitchen!</h2>
+      <p class="text-gray-600 mt-1">Federal Housing Estate, Runjin Sambo, Sokoto</p>
+      <p class="text-orange-600 font-medium">📞 +234 901 969 7371</p>
+    </div>
+    <p class="text-gray-600 mt-4">What would you like today?</p>
     <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6 text-lg">Browse Menu</button>
     <button onclick="showScreen('track')" class="w-full border border-orange-500 text-orange-500 py-4 rounded-2xl mt-3 text-lg">Track My Order</button>
   </div>
@@ -68,10 +73,12 @@
     <p>Order #<span id="order-number" class="font-mono">MK-8742</span></p>
     <div class="bg-white p-4 rounded-2xl shadow mt-4">
       <div class="flex justify-between"><span>Status:</span><span id="status" class="font-bold text-orange-600">Out for delivery</span></div>
+      <p class="text-sm mt-2">Delivery to: 12 Adeola Odeku Street, Victoria Island, Lagos</p>
       <div class="h-80 mt-6 bg-gray-100 rounded-xl overflow-hidden">
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d3.3792!3d6.5244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b2ae68280c1%3A0x0!2zNi41MjQ0LDQuMzc5Mg!5e0!3m2!1sen!2sng!4v1740000000000" width="100%" height="100%" style="border:0;" allowfullscreen></iframe>
       </div>
       <p class="text-center text-sm mt-3">🚀 Optimized route • 28 minutes (traffic-aware)</p>
+      <p class="text-center text-xs mt-1 text-gray-500">Call us: +234 801 234 5678</p>
     </div>
     <button onclick="showScreen('home')" class="w-full py-3 border rounded-2xl mt-8">← Back</button>
   </div>
@@ -106,8 +113,8 @@
     function filterCategory(cat) {
       currentCategory = cat;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
-      document.getElementById('tab-' + cat).classList.add('tab-active');
       if (cat === 'all') document.getElementById('tab-all').classList.add('tab-active');
+      else document.getElementById('tab-' + cat).classList.add('tab-active');
       renderMenu();
     }
 
