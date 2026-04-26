@@ -124,12 +124,28 @@
   </div>
 
   <script>
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-    const menuItems = [
-      {id:1, name:"Jollof Rice + Chicken", price:2800},
-      {id:2, name:"Egusi + Fufu", price:3200},
-      {id:3, name:"Fried Rice + Turkey", price:3000}
+    let cart = JSON.parse(localStorage.getItem('cart'))|| []
+      const menuItems = [
+      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken"},
+      {id:2, name:"Egusi Soup + Eba", price:3200, desc:"Classic melon seed soup with eba"},
+      {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice with turkey"},
+      {id:4, name:"Pepper Soup (Goat)", price:2500, desc:"Hot spicy goat pepper soup"},
+      {id:5, name:"Moi Moi + Fish", price:1800, desc:"Steamed bean pudding with fish"},
+      {id:6, name:"Pounded Yam + Egusi", price:3400, desc:"Smooth pounded yam with egusi soup"},
+      {id:7, name:"Efo Riro + Semo", price:2800, desc:"Vegetable soup with semolina"},
+      {id:8, name:"Ofada Rice + Stew", price:2600, desc:"Local ofada rice with ayamase stew"},
+      {id:9, name:"Amala + Ewedu + Gbegiri", price:2500, desc:"Amala with ewedu and bean soup"},
+      {id:10, name:"Ogbono Soup + Fufu", price:3100, desc:"Draw soup with fufu"},
+      {id:11, name:"Suya (Beef)", price:2000, desc:"Spicy grilled suya with onions"},
+      {id:12, name:"Nkwobi", price:2200, desc:"Spicy cow foot delicacy"},
+      {id:13, name:"Plantain (Dodo) + Fried Egg", price:1500, desc:"Fried sweet plantain with egg"},
+      {id:14, name:"Zobo Drink (Large)", price:800, desc:"Refreshing hibiscus drink"},
+      {id:15, name:"Puff Puff (6 pieces)", price:1000, desc:"Sweet fried dough balls"},
+      {id:16, name:"Afang Soup + Fufu", price:3300, desc:"Okra and waterleaf soup with fufu"},
+      {id:17, name:"Yam Porridge (Asaro)", price:2400, desc:"Yam porridge with peppers"},
+      {id:18, name:"Croaker Fish Pepper Soup", price:2800, desc:"Fresh croaker fish pepper soup"},
+      {id:19, name:"Beans + Plantain (Gbegiri style)", price:2200, desc:"Stewed beans with dodo"},
+      {id:20, name:"Banga Soup + Starch", price:3500, desc:"Palm nut soup with starch"}
     ];
 
     function renderMenu() {
