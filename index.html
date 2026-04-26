@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deelag's Kitchen</title>
+  <title>Maryam's Kitchen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="theme-color" content="#FF6B00">
   <style>
@@ -20,8 +20,8 @@
   <!-- HEADER -->
   <div class="header p-4 flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold">🍲 Deelag's Kitchen</h1>
-      <p class="text-sm">Hot Nigerian Meals Delivered Fresh</p>
+      <h1 class="text-2xl font-bold">🍲 Maryam's Kitchen</h1>
+      <p class="text-sm">12 Adeola Odeku Street, Victoria Island, Lagos • +234 801 234 5678</p>
     </div>
     <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-4 py-1 rounded-full text-sm font-medium">Rider Mode</button>
   </div>
@@ -30,20 +30,25 @@
   <div id="home" class="screen active p-4">
     <img src="https://picsum.photos/id/1015/800/400" class="w-full rounded-2xl shadow" alt="restaurant">
     <div class="mt-6 bg-white p-4 rounded-2xl shadow">
-      <h2 class="text-3xl font-bold">Welcome to Deelag's Kitchen!</h2>
-      <p class="text-gray-600 mt-1">Federal Housing Estate, Runjin Sambo, Sokoto</p>
-      <p class="text-orange-600 font-medium">📞 +234 901 969 7371</p>
+      <h2 class="text-3xl font-bold">Welcome to Maryam's Kitchen!</h2>
+      <p class="text-gray-600">12 Adeola Odeku Street, Victoria Island, Lagos</p>
+      <p class="text-orange-600 font-medium">📞 +234 801 234 5678</p>
     </div>
-    <p class="text-gray-600 mt-4">What would you like today?</p>
     <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6 text-lg">Browse Menu</button>
     <button onclick="showScreen('track')" class="w-full border border-orange-500 text-orange-500 py-4 rounded-2xl mt-3 text-lg">Track My Order</button>
   </div>
 
-  <!-- MENU with Categories -->
+  <!-- MENU with Search & Categories -->
   <div id="menu" class="screen p-4">
     <h2 class="text-2xl font-bold mb-3">Our Menu</h2>
     
-    <!-- Tabs -->
+    <!-- Search Bar -->
+    <input type="text" id="searchInput" 
+           onkeyup="searchMenu()" 
+           placeholder="Search menu items..." 
+           class="w-full p-4 border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-orange-500">
+
+    <!-- Category Tabs -->
     <div class="flex overflow-x-auto gap-2 pb-3 mb-4">
       <button onclick="filterCategory('all')" class="tab tab-active px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-all">All</button>
       <button onclick="filterCategory('rice')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-rice">Rice</button>
@@ -61,10 +66,20 @@
     <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
     <div id="cart-list" class="space-y-4"></div>
     <div class="mt-8 border-t pt-4">
-      <div class="flex justify-between text-xl font-bold"><span>Total</span><span id="total">₦0</span></div>
+      <div class="flex justify-between text-lg"><span>Subtotal</span><span id="subtotal">₦0</span></div>
+      <div class="flex justify-between text-lg"><span>Delivery Fee</span><span class="text-orange-600">₦500</span></div>
+      <div class="flex justify-between text-xl font-bold border-t pt-2 mt-2"><span>Total</span><span id="total">₦0</span></div>
       <button onclick="checkout()" class="w-full bg-green-600 text-white py-4 rounded-2xl mt-6 text-lg">Pay with Paystack</button>
       <button onclick="showScreen('menu')" class="w-full py-3 border rounded-2xl mt-3">Add more items</button>
     </div>
+  </div>
+
+  <!-- RIDER DASHBOARD -->
+  <div id="rider" class="screen p-4">
+    <h2 class="text-2xl font-bold mb-4">🚀 Rider Dashboard</h2>
+    <p class="text-sm text-gray-600 mb-4">Available Orders • Optimized Routes</p>
+    <div id="rider-orders" class="space-y-4"></div>
+    <button onclick="showScreen('home')" class="mt-8 w-full py-3 border rounded-2xl">← Back to Customer Mode</button>
   </div>
 
   <!-- TRACK ORDER -->
@@ -86,6 +101,7 @@
   <script>
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let currentCategory = 'all';
+    let searchTerm = '';
 
     const menuItems = [
       {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken", category:"rice", image:"https://picsum.photos/id/1015/300/200"},
@@ -110,18 +126,40 @@
       {id:20, name:"Banga Soup + Starch", price:3500, desc:"Palm nut soup with starch", category:"soup", image:"https://picsum.photos/id/1080/300/200"}
     ];
 
+    // Sample rider orders
+    const sampleRiderOrders = [
+      {id: "R001", customer: "Aisha Bello", address: "15 Marina Road, Lagos", items: "Jollof + Chicken", distance: "4.2km", time: "18 min", status: "Ready"},
+      {id: "R002", customer: "Chinedu Okoro", address: "3 Bourdillon Road, Ikoyi", items: "Egusi + Eba", distance: "2.8km", time: "12 min", status: "Preparing"}
+    ];
+
     function filterCategory(cat) {
       currentCategory = cat;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
       if (cat === 'all') document.getElementById('tab-all').classList.add('tab-active');
       else document.getElementById('tab-' + cat).classList.add('tab-active');
+      searchMenu();
+    }
+
+    function searchMenu() {
+      searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
       renderMenu();
     }
 
     function renderMenu() {
       const container = document.getElementById('menu-list');
       container.innerHTML = '';
-      const filtered = currentCategory === 'all' ? menuItems : menuItems.filter(item => item.category === currentCategory);
+      let filtered = menuItems;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(item => item.category === currentCategory);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter(item => 
+          item.name.toLowerCase().includes(searchTerm) || 
+          item.desc.toLowerCase().includes(searchTerm)
+        );
+      }
+
       filtered.forEach(item => {
         const div = document.createElement('div');
         div.className = 'bg-white p-4 rounded-2xl shadow flex gap-4';
@@ -147,7 +185,7 @@
         cart.push({...item, quantity: 1});
       }
       localStorage.setItem('cart', JSON.stringify(cart));
-      alert(`${item.name} added (quantity updated)`);
+      alert(`${item.name} added`);
     }
 
     function changeQuantity(index, change) {
@@ -157,20 +195,18 @@
     }
 
     function removeFromCart(index) {
-      const removed = cart[index];
       cart.splice(index, 1);
       localStorage.setItem('cart', JSON.stringify(cart));
       renderCart();
-      alert(`${removed.name} removed from cart`);
     }
 
     function renderCart() {
       const container = document.getElementById('cart-list');
       container.innerHTML = '';
-      let total = 0;
+      let subtotal = 0;
       cart.forEach((item, index) => {
         const qty = item.quantity || 1;
-        total += item.price * qty;
+        subtotal += item.price * qty;
         const div = document.createElement('div');
         div.className = 'bg-white p-4 rounded-2xl shadow flex justify-between items-center';
         div.innerHTML = `
@@ -187,23 +223,56 @@
         `;
         container.appendChild(div);
       });
+      const deliveryFee = 500;
+      const total = subtotal + deliveryFee;
+      document.getElementById('subtotal').textContent = `₦${subtotal}`;
       document.getElementById('total').textContent = `₦${total}`;
     }
 
     function checkout() {
       if (cart.length === 0) return alert("Your cart is empty");
       window.open('https://paystack.com/demo/checkout', '_blank');
-      alert("Paystack demo opened in new tab.\n\nTest a payment there.\n\nYour order has been placed!");
+      alert("Paystack demo opened.\nTest payment successful!");
       document.getElementById('order-number').textContent = "MK-" + Math.floor(1000 + Math.random() * 9000);
       cart = [];
       localStorage.setItem('cart', JSON.stringify(cart));
       showScreen('track');
     }
 
+    // Rider Dashboard
+    function renderRiderDashboard() {
+      const container = document.getElementById('rider-orders');
+      container.innerHTML = '';
+      sampleRiderOrders.forEach(order => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-4 rounded-2xl shadow';
+        div.innerHTML = `
+          <div class="flex justify-between">
+            <div>
+              <p class="font-medium">#${order.id}</p>
+              <p>${order.customer}</p>
+              <p class="text-sm text-gray-600">${order.address}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-orange-600">${order.distance}</p>
+              <p class="text-sm">${order.time}</p>
+            </div>
+          </div>
+          <p class="mt-2">${order.items}</p>
+          <button onclick="acceptOrder('${order.id}')" class="mt-4 w-full bg-green-600 text-white py-3 rounded-2xl">Accept Order</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function acceptOrder(orderId) {
+      alert(`✅ Order ${orderId} accepted!\nOptimized route loaded.\nEstimated delivery: 25 min`);
+    }
+
     function toggleRiderMode() {
       if (confirm("Switch to Rider Mode?")) {
-        alert("🚀 Rider Mode ON\nYou have 2 new orders nearby.\nRoute optimized for traffic.");
-        showScreen('track');
+        showScreen('rider');
+        renderRiderDashboard();
       }
     }
 
@@ -215,6 +284,7 @@
         renderMenu();
       }
       if (id === 'cart') renderCart();
+      if (id === 'rider') renderRiderDashboard();
     }
   </script>
 </body>
