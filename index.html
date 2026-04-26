@@ -13,6 +13,8 @@
     .header { background: linear-gradient(#FF6B00, #FF8C00); color: white; }
     .tab { transition: all 0.3s; }
     .tab-active { background: #FF6B00; color: white; }
+    .rider-dot { animation: moveRider 8s linear infinite; }
+    @keyframes moveRider { 0% { transform: translateX(0); } 100% { transform: translateX(200px); } }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -34,31 +36,26 @@
       <p class="text-gray-600">12 Adeola Odeku Street, Victoria Island, Lagos</p>
       <p class="text-orange-600 font-medium">📞 +234 801 234 5678</p>
     </div>
-    <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6 text-lg">Browse Menu</button>
+    <div class="grid grid-cols-2 gap-3 mt-6">
+      <button onclick="showScreen('menu')" class="bg-orange-500 text-white py-4 rounded-2xl text-lg">Browse Menu</button>
+      <button onclick="showScreen('history')" class="bg-white border border-orange-500 text-orange-500 py-4 rounded-2xl text-lg">Order History</button>
+    </div>
     <button onclick="showScreen('track')" class="w-full border border-orange-500 text-orange-500 py-4 rounded-2xl mt-3 text-lg">Track My Order</button>
   </div>
 
   <!-- MENU with Search & Categories -->
   <div id="menu" class="screen p-4">
     <h2 class="text-2xl font-bold mb-3">Our Menu</h2>
-    
-    <!-- Search Bar -->
-    <input type="text" id="searchInput" 
-           onkeyup="searchMenu()" 
-           placeholder="Search menu items..." 
-           class="w-full p-4 border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-orange-500">
-
-    <!-- Category Tabs -->
+    <input type="text" id="searchInput" onkeyup="searchMenu()" placeholder="Search menu items..." class="w-full p-4 border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-orange-500">
     <div class="flex overflow-x-auto gap-2 pb-3 mb-4">
-      <button onclick="filterCategory('all')" class="tab tab-active px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-all">All</button>
-      <button onclick="filterCategory('rice')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-rice">Rice</button>
-      <button onclick="filterCategory('soup')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-soup">Soups</button>
-      <button onclick="filterCategory('side')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-side">Sides</button>
-      <button onclick="filterCategory('drink')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-drink">Drinks</button>
+      <button onclick="filterCategory('all')" class="tab tab-active px-5 py-2 rounded-3xl text-sm font-medium" id="tab-all">All</button>
+      <button onclick="filterCategory('rice')" class="tab px-5 py-2 rounded-3xl text-sm font-medium" id="tab-rice">Rice</button>
+      <button onclick="filterCategory('soup')" class="tab px-5 py-2 rounded-3xl text-sm font-medium" id="tab-soup">Soups</button>
+      <button onclick="filterCategory('side')" class="tab px-5 py-2 rounded-3xl text-sm font-medium" id="tab-side">Sides</button>
+      <button onclick="filterCategory('drink')" class="tab px-5 py-2 rounded-3xl text-sm font-medium" id="tab-drink">Drinks</button>
     </div>
-
     <div id="menu-list" class="space-y-4"></div>
-    <button onclick="showScreen('home')" class="mt-6 w-full py-3 border rounded-2xl">← Back to Home</button>
+    <button onclick="showScreen('home')" class="mt-6 w-full py-3 border rounded-2xl">← Back</button>
   </div>
 
   <!-- CART -->
@@ -70,14 +67,21 @@
       <div class="flex justify-between text-lg"><span>Delivery Fee</span><span class="text-orange-600">₦500</span></div>
       <div class="flex justify-between text-xl font-bold border-t pt-2 mt-2"><span>Total</span><span id="total">₦0</span></div>
       <button onclick="checkout()" class="w-full bg-green-600 text-white py-4 rounded-2xl mt-6 text-lg">Pay with Paystack</button>
-      <button onclick="showScreen('menu')" class="w-full py-3 border rounded-2xl mt-3">Add more items</button>
+      <button onclick="showScreen('menu')" class="w-full py-3 border rounded-2xl mt-3">Add more</button>
     </div>
   </div>
 
-  <!-- RIDER DASHBOARD -->
+  <!-- ORDER HISTORY -->
+  <div id="history" class="screen p-4">
+    <h2 class="text-2xl font-bold mb-4">Order History</h2>
+    <div id="history-list" class="space-y-4"></div>
+    <button onclick="showScreen('home')" class="mt-8 w-full py-3 border rounded-2xl">← Back</button>
+  </div>
+
+  <!-- RIDER DASHBOARD (Improved with Live Simulation) -->
   <div id="rider" class="screen p-4">
     <h2 class="text-2xl font-bold mb-4">🚀 Rider Dashboard</h2>
-    <p class="text-sm text-gray-600 mb-4">Available Orders • Optimized Routes</p>
+    <p class="text-sm text-gray-600 mb-4">Available Orders • Live Location Simulation</p>
     <div id="rider-orders" class="space-y-4"></div>
     <button onclick="showScreen('home')" class="mt-8 w-full py-3 border rounded-2xl">← Back to Customer Mode</button>
   </div>
@@ -89,22 +93,23 @@
     <div class="bg-white p-4 rounded-2xl shadow mt-4">
       <div class="flex justify-between"><span>Status:</span><span id="status" class="font-bold text-orange-600">Out for delivery</span></div>
       <p class="text-sm mt-2">Delivery to: 12 Adeola Odeku Street, Victoria Island, Lagos</p>
-      <div class="h-80 mt-6 bg-gray-100 rounded-xl overflow-hidden">
+      <div class="h-80 mt-6 bg-gray-100 rounded-xl overflow-hidden relative">
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d3.3792!3d6.5244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b2ae68280c1%3A0x0!2zNi41MjQ0LDQuMzc5Mg!5e0!3m2!1sen!2sng!4v1740000000000" width="100%" height="100%" style="border:0;" allowfullscreen></iframe>
+        <div class="absolute top-1/2 left-1/3 w-6 h-6 bg-green-500 rounded-full rider-dot flex items-center justify-center text-white text-xs">🛵</div>
       </div>
-      <p class="text-center text-sm mt-3">🚀 Optimized route • 28 minutes (traffic-aware)</p>
-      <p class="text-center text-xs mt-1 text-gray-500">Call us: +234 801 234 5678</p>
+      <p class="text-center text-sm mt-3">🚀 Live rider moving • Optimized route • 28 min</p>
     </div>
     <button onclick="showScreen('home')" class="w-full py-3 border rounded-2xl mt-8">← Back</button>
   </div>
 
   <script>
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
     let currentCategory = 'all';
     let searchTerm = '';
 
     const menuItems = [
-      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken", category:"rice", image:"https://picsum.photos/id/1015/300/200"},
+      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken", category:"rice", image:"https://images.pexels.com/photos/13915043/pexels-photo-13915043.jpeg"},
       {id:2, name:"Egusi Soup + Eba", price:3200, desc:"Classic melon seed soup with eba", category:"soup", image:"https://picsum.photos/id/201/300/200"},
       {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice with turkey", category:"rice", image:"https://picsum.photos/id/106/300/200"},
       {id:4, name:"Pepper Soup (Goat)", price:2500, desc:"Hot spicy goat pepper soup", category:"soup", image:"https://picsum.photos/id/292/300/200"},
@@ -126,10 +131,9 @@
       {id:20, name:"Banga Soup + Starch", price:3500, desc:"Palm nut soup with starch", category:"soup", image:"https://picsum.photos/id/1080/300/200"}
     ];
 
-    // Sample rider orders
     const sampleRiderOrders = [
-      {id: "R001", customer: "Aisha Bello", address: "15 Marina Road, Lagos", items: "Jollof + Chicken", distance: "4.2km", time: "18 min", status: "Ready"},
-      {id: "R002", customer: "Chinedu Okoro", address: "3 Bourdillon Road, Ikoyi", items: "Egusi + Eba", distance: "2.8km", time: "12 min", status: "Preparing"}
+      {id: "R001", customer: "Aisha Bello", address: "15 Marina Road, Lagos", items: "Jollof Rice + Chicken", distance: "4.2km", time: "18 min", status: "Ready for pickup"},
+      {id: "R002", customer: "Chinedu Okoro", address: "3 Bourdillon Road, Ikoyi", items: "Egusi Soup + Eba", distance: "2.8km", time: "12 min", status: "Preparing"}
     ];
 
     function filterCategory(cat) {
@@ -149,16 +153,8 @@
       const container = document.getElementById('menu-list');
       container.innerHTML = '';
       let filtered = menuItems;
-
-      if (currentCategory !== 'all') {
-        filtered = filtered.filter(item => item.category === currentCategory);
-      }
-      if (searchTerm) {
-        filtered = filtered.filter(item => 
-          item.name.toLowerCase().includes(searchTerm) || 
-          item.desc.toLowerCase().includes(searchTerm)
-        );
-      }
+      if (currentCategory !== 'all') filtered = filtered.filter(item => item.category === currentCategory);
+      if (searchTerm) filtered = filtered.filter(item => item.name.toLowerCase().includes(searchTerm) || item.desc.toLowerCase().includes(searchTerm));
 
       filtered.forEach(item => {
         const div = document.createElement('div');
@@ -179,11 +175,8 @@
     function addToCart(id) {
       const item = menuItems.find(i => i.id === id);
       const existing = cart.find(c => c.id === id);
-      if (existing) {
-        existing.quantity = (existing.quantity || 1) + 1;
-      } else {
-        cart.push({...item, quantity: 1});
-      }
+      if (existing) existing.quantity = (existing.quantity || 1) + 1;
+      else cart.push({...item, quantity: 1});
       localStorage.setItem('cart', JSON.stringify(cart));
       alert(`${item.name} added`);
     }
@@ -231,19 +224,39 @@
 
     function checkout() {
       if (cart.length === 0) return alert("Your cart is empty");
+      const order = { id: "MK-" + Math.floor(1000 + Math.random() * 9000), date: new Date().toLocaleDateString(), items: cart.map(i => i.name).join(", "), total: document.getElementById('total').textContent };
+      orderHistory.unshift(order);
+      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
       window.open('https://paystack.com/demo/checkout', '_blank');
-      alert("Paystack demo opened.\nTest payment successful!");
-      document.getElementById('order-number').textContent = "MK-" + Math.floor(1000 + Math.random() * 9000);
+      alert("Paystack demo opened.\nOrder saved to history!");
       cart = [];
       localStorage.setItem('cart', JSON.stringify(cart));
       showScreen('track');
     }
 
-    // Rider Dashboard
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+      container.innerHTML = '';
+      if (orderHistory.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No orders yet. Place your first order!</p>';
+        return;
+      }
+      orderHistory.forEach(order => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-4 rounded-2xl shadow';
+        div.innerHTML = `
+          <p class="font-medium">${order.id} • ${order.date}</p>
+          <p class="text-sm text-gray-600">${order.items}</p>
+          <p class="text-orange-600 font-bold">${order.total}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
     function renderRiderDashboard() {
       const container = document.getElementById('rider-orders');
       container.innerHTML = '';
-      sampleRiderOrders.forEach(order => {
+      sampleRiderOrders.forEach((order, idx) => {
         const div = document.createElement('div');
         div.className = 'bg-white p-4 rounded-2xl shadow';
         div.innerHTML = `
@@ -259,14 +272,17 @@
             </div>
           </div>
           <p class="mt-2">${order.items}</p>
-          <button onclick="acceptOrder('${order.id}')" class="mt-4 w-full bg-green-600 text-white py-3 rounded-2xl">Accept Order</button>
+          <div class="mt-4 bg-gray-100 h-6 rounded-full relative overflow-hidden">
+            <div class="absolute h-full bg-green-500 rider-dot w-6 flex items-center justify-center text-white text-xs" style="animation-delay: ${idx * 2}s">🛵</div>
+          </div>
+          <button onclick="acceptOrder('${order.id}')" class="mt-4 w-full bg-green-600 text-white py-3 rounded-2xl">Accept & Start Delivery</button>
         `;
         container.appendChild(div);
       });
     }
 
     function acceptOrder(orderId) {
-      alert(`✅ Order ${orderId} accepted!\nOptimized route loaded.\nEstimated delivery: 25 min`);
+      alert(`✅ Order ${orderId} accepted!\nLive rider simulation started.\nEstimated arrival: 25 min`);
     }
 
     function toggleRiderMode() {
@@ -279,11 +295,9 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      if (id === 'menu') {
-        filterCategory('all');
-        renderMenu();
-      }
+      if (id === 'menu') { filterCategory('all'); renderMenu(); }
       if (id === 'cart') renderCart();
+      if (id === 'history') renderHistory();
       if (id === 'rider') renderRiderDashboard();
     }
   </script>
