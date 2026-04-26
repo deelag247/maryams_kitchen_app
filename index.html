@@ -1,166 +1,131 @@
-to<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maryam's Kitchen</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://js.paystack.co/v1/inline.js"></script>
-
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, getDocs, updateDoc, doc 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    window.db = db;
-    window.collection = collection;
-    window.addDoc = addDoc;
-    window.getDocs = getDocs;
-    window.updateDoc = updateDoc;
-    window.doc = doc;
-  </script>
-
+  <meta name="theme-color" content="#FF6B00">
   <style>
     body { font-family: system-ui; }
     .screen { display: none; }
     .active { display: block; }
     .header { background: linear-gradient(#FF6B00, #FF8C00); color: white; }
+    .tab { transition: all 0.3s; }
+    .tab-active { background: #FF6B00; color: white; }
   </style>
 </head>
-
 <body class="bg-gray-50">
 
-  <!-- HEADER -->
-  <div class="header p-4 flex justify-between items-center">
+  <div class="header p-4 flex items-center justify-between">
     <div>
-      <h1 class="text-xl font-bold">🍲 Maryam's Kitchen</h1>
-      <p class="text-sm">Hot Nigerian Meals</p>
+      <h1 class="text-2xl font-bold">🍲 Maryam's Kitchen</h1>
+      <p class="text-sm">Hot Nigerian Meals • Lagos / Abuja</p>
     </div>
-
-    <div class="flex gap-2">
-      <button onclick="showScreen('admin')" class="bg-black text-white px-3 py-1 rounded text-sm">
-        Admin
-      </button>
-      <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-3 py-1 rounded text-sm">
-        Rider
-      </button>
-    </div>
+    <button onclick="toggleRiderMode()" class="bg-white text-orange-600 px-4 py-1 rounded-full text-sm font-medium">Rider Mode</button>
   </div>
 
   <!-- HOME -->
   <div id="home" class="screen active p-4">
-    <h2 class="text-2xl font-bold mt-6">Welcome</h2>
-    <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6">
-      Browse Menu
-    </button>
+    <img src="https://picsum.photos/id/1015/800/400" class="w-full rounded-2xl shadow" alt="restaurant">
+    <h2 class="text-3xl font-bold mt-6">Welcome back!</h2>
+    <p class="text-gray-600">What would you like today?</p>
+    <button onclick="showScreen('menu')" class="w-full bg-orange-500 text-white py-4 rounded-2xl mt-6 text-lg">Browse Menu</button>
+    <button onclick="showScreen('track')" class="w-full border border-orange-500 text-orange-500 py-4 rounded-2xl mt-3 text-lg">Track My Order</button>
   </div>
 
-  <!-- MENU -->
+  <!-- MENU with Categories -->
   <div id="menu" class="screen p-4">
-    <h2 class="text-xl font-bold mb-4">Menu</h2>
+    <h2 class="text-2xl font-bold mb-3">Our Menu</h2>
+    
+    <!-- Tabs -->
+    <div class="flex overflow-x-auto gap-2 pb-3 mb-4">
+      <button onclick="filterCategory('all')" class="tab tab-active px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-all">All</button>
+      <button onclick="filterCategory('rice')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-rice">Rice</button>
+      <button onclick="filterCategory('soup')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-soup">Soups</button>
+      <button onclick="filterCategory('side')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-side">Sides</button>
+      <button onclick="filterCategory('drink')" class="tab px-5 py-2 rounded-3xl text-sm font-medium whitespace-nowrap" id="tab-drink">Drinks</button>
+    </div>
+
     <div id="menu-list" class="space-y-4"></div>
-
-    <button onclick="showScreen('cart')" 
-      class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg">
-      🛒 Cart
-    </button>
-
-    <button onclick="showScreen('home')" class="mt-6 w-full border py-3 rounded-2xl">
-      ← Back
-    </button>
+    <button onclick="showScreen('home')" class="mt-6 w-full py-3 border rounded-2xl">← Back to Home</button>
   </div>
 
   <!-- CART -->
   <div id="cart" class="screen p-4">
-    <h2 class="text-xl font-bold mb-4">Your Cart</h2>
-    <div id="cart-list" class="space-y-3"></div>
-
-    <div class="mt-6 space-y-3">
-      <input id="customer-name" placeholder="Full Name" class="w-full p-3 border rounded-xl">
-      <input id="customer-phone" placeholder="Phone Number" class="w-full p-3 border rounded-xl">
-      <input id="customer-address" placeholder="Delivery Address" class="w-full p-3 border rounded-xl">
-
-      <div class="flex justify-between font-bold text-lg">
-        <span>Total</span>
-        <span id="total">₦0</span>
-      </div>
-
-      <button onclick="payWithPaystack()" class="w-full bg-green-600 text-white py-4 rounded-2xl">
-        Pay with Paystack
-      </button>
+    <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+    <div id="cart-list" class="space-y-4"></div>
+    <div class="mt-8 border-t pt-4">
+      <div class="flex justify-between text-xl font-bold"><span>Total</span><span id="total">₦0</span></div>
+      <button onclick="checkout()" class="w-full bg-green-600 text-white py-4 rounded-2xl mt-6 text-lg">Pay with Paystack</button>
+      <button onclick="showScreen('menu')" class="w-full py-3 border rounded-2xl mt-3">Add more items</button>
     </div>
   </div>
 
-  <!-- TRACK -->
+  <!-- TRACK ORDER -->
   <div id="track" class="screen p-4">
-    <h2 class="text-xl font-bold">Tracking</h2>
-    <p>Order #: <span id="order-number">---</span></p>
-    <p class="text-orange-600 font-bold mt-3">Processing...</p>
-    <button onclick="showScreen('home')" class="w-full border py-3 mt-6 rounded-2xl">
-      Back
-    </button>
-  </div>
-
-  <!-- ADMIN -->
-  <div id="admin" class="screen p-4">
-    <h2 class="text-xl font-bold mb-4">Admin Dashboard</h2>
-    <div id="orders-list" class="space-y-4"></div>
-
-    <button onclick="showScreen('home')" class="w-full border py-3 mt-6 rounded-2xl">
-      ← Back
-    </button>
+    <h2 class="text-2xl font-bold">Order Tracking</h2>
+    <p>Order #<span id="order-number" class="font-mono">MK-8742</span></p>
+    <div class="bg-white p-4 rounded-2xl shadow mt-4">
+      <div class="flex justify-between"><span>Status:</span><span id="status" class="font-bold text-orange-600">Out for delivery</span></div>
+      <div class="h-80 mt-6 bg-gray-100 rounded-xl overflow-hidden">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d3.3792!3d6.5244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b2ae68280c1%3A0x0!2zNi41MjQ0LDQuMzc5Mg!5e0!3m2!1sen!2sng!4v1740000000000" width="100%" height="100%" style="border:0;" allowfullscreen></iframe>
+      </div>
+      <p class="text-center text-sm mt-3">🚀 Optimized route • 28 minutes (traffic-aware)</p>
+    </div>
+    <button onclick="showScreen('home')" class="w-full py-3 border rounded-2xl mt-8">← Back</button>
   </div>
 
   <script>
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let currentCategory = 'all';
+
     const menuItems = [
-      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken"},
-      {id:2, name:"Egusi Soup + Eba", price:3200, desc:"Classic melon seed soup with eba"},
-      {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice with turkey"},
-      {id:4, name:"Pepper Soup (Goat)", price:2500, desc:"Hot spicy goat pepper soup"},
-      {id:5, name:"Moi Moi + Fish", price:1800, desc:"Steamed bean pudding with fish"},
-      {id:6, name:"Pounded Yam + Egusi", price:3400, desc:"Smooth pounded yam with egusi soup"},
-      {id:7, name:"Efo Riro + Semo", price:2800, desc:"Vegetable soup with semolina"},
-      {id:8, name:"Ofada Rice + Stew", price:2600, desc:"Local ofada rice with ayamase stew"},
-      {id:9, name:"Amala + Ewedu + Gbegiri", price:2500, desc:"Amala with ewedu and bean soup"},
-      {id:10, name:"Ogbono Soup + Fufu", price:3100, desc:"Draw soup with fufu"},
-      {id:11, name:"Suya (Beef)", price:2000, desc:"Spicy grilled suya with onions"},
-      {id:12, name:"Nkwobi", price:2200, desc:"Spicy cow foot delicacy"},
-      {id:13, name:"Plantain (Dodo) + Fried Egg", price:1500, desc:"Fried sweet plantain with egg"},
-      {id:14, name:"Zobo Drink (Large)", price:800, desc:"Refreshing hibiscus drink"},
-      {id:15, name:"Puff Puff (6 pieces)", price:1000, desc:"Sweet fried dough balls"},
-      {id:16, name:"Afang Soup + Fufu", price:3300, desc:"Okra and waterleaf soup with fufu"},
-      {id:17, name:"Yam Porridge (Asaro)", price:2400, desc:"Yam porridge with peppers"},
-      {id:18, name:"Croaker Fish Pepper Soup", price:2800, desc:"Fresh croaker fish pepper soup"},
-      {id:19, name:"Beans + Plantain (Gbegiri style)", price:2200, desc:"Stewed beans with dodo"},
-      {id:20, name:"Banga Soup + Starch", price:3500, desc:"Palm nut soup with starch"}
+      {id:1, name:"Jollof Rice + Chicken", price:2800, desc:"Spicy jollof rice with grilled chicken", category:"rice", image:"https://picsum.photos/id/1015/300/200"},
+      {id:2, name:"Egusi Soup + Eba", price:3200, desc:"Classic melon seed soup with eba", category:"soup", image:"https://picsum.photos/id/201/300/200"},
+      {id:3, name:"Fried Rice + Turkey", price:3000, desc:"Nigerian fried rice with turkey", category:"rice", image:"https://picsum.photos/id/106/300/200"},
+      {id:4, name:"Pepper Soup (Goat)", price:2500, desc:"Hot spicy goat pepper soup", category:"soup", image:"https://picsum.photos/id/292/300/200"},
+      {id:5, name:"Moi Moi + Fish", price:1800, desc:"Steamed bean pudding with fish", category:"side", image:"https://picsum.photos/id/431/300/200"},
+      {id:6, name:"Pounded Yam + Egusi", price:3400, desc:"Smooth pounded yam with egusi soup", category:"soup", image:"https://picsum.photos/id/669/300/200"},
+      {id:7, name:"Efo Riro + Semo", price:2800, desc:"Vegetable soup with semolina", category:"soup", image:"https://picsum.photos/id/870/300/200"},
+      {id:8, name:"Ofada Rice + Stew", price:2600, desc:"Local ofada rice with ayamase stew", category:"rice", image:"https://picsum.photos/id/1060/300/200"},
+      {id:9, name:"Amala + Ewedu + Gbegiri", price:2500, desc:"Amala with ewedu and bean soup", category:"soup", image:"https://picsum.photos/id/1080/300/200"},
+      {id:10, name:"Ogbono Soup + Fufu", price:3100, desc:"Draw soup with fufu", category:"soup", image:"https://picsum.photos/id/133/300/200"},
+      {id:11, name:"Suya (Beef)", price:2000, desc:"Spicy grilled suya with onions", category:"protein", image:"https://picsum.photos/id/292/300/200"},
+      {id:12, name:"Nkwobi", price:2200, desc:"Spicy cow foot delicacy", category:"side", image:"https://picsum.photos/id/431/300/200"},
+      {id:13, name:"Plantain (Dodo) + Fried Egg", price:1500, desc:"Fried sweet plantain with egg", category:"side", image:"https://picsum.photos/id/106/300/200"},
+      {id:14, name:"Zobo Drink (Large)", price:800, desc:"Refreshing hibiscus drink", category:"drink", image:"https://picsum.photos/id/870/300/200"},
+      {id:15, name:"Puff Puff (6 pieces)", price:1000, desc:"Sweet fried dough balls", category:"side", image:"https://picsum.photos/id/133/300/200"},
+      {id:16, name:"Afang Soup + Fufu", price:3300, desc:"Okra and waterleaf soup with fufu", category:"soup", image:"https://picsum.photos/id/669/300/200"},
+      {id:17, name:"Yam Porridge (Asaro)", price:2400, desc:"Yam porridge with peppers", category:"rice", image:"https://picsum.photos/id/1015/300/200"},
+      {id:18, name:"Croaker Fish Pepper Soup", price:2800, desc:"Fresh croaker fish pepper soup", category:"soup", image:"https://picsum.photos/id/292/300/200"},
+      {id:19, name:"Beans + Plantain", price:2200, desc:"Stewed beans with dodo", category:"side", image:"https://picsum.photos/id/1060/300/200"},
+      {id:20, name:"Banga Soup + Starch", price:3500, desc:"Palm nut soup with starch", category:"soup", image:"https://picsum.photos/id/1080/300/200"}
     ];
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
+      document.getElementById('tab-' + cat).classList.add('tab-active');
+      if (cat === 'all') document.getElementById('tab-all').classList.add('tab-active');
+      renderMenu();
+    }
 
     function renderMenu() {
       const container = document.getElementById('menu-list');
       container.innerHTML = '';
-      menuItems.forEach(item => {
+      const filtered = currentCategory === 'all' ? menuItems : menuItems.filter(item => item.category === currentCategory);
+      filtered.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'bg-white p-4 rounded-2xl shadow flex justify-between items-center';
+        div.className = 'bg-white p-4 rounded-2xl shadow flex gap-4';
         div.innerHTML = `
-          <div>
+          <img src="${item.image}" class="w-24 h-24 object-cover rounded-xl" alt="${item.name}">
+          <div class="flex-1">
             <h3 class="font-medium">${item.name}</h3>
             <p class="text-sm text-gray-600">${item.desc}</p>
             <p class="text-orange-600 font-bold">₦${item.price}</p>
+            <button onclick="addToCart(${item.id})" class="mt-2 bg-orange-500 text-white px-6 py-2 rounded-xl text-sm">Add to Cart</button>
           </div>
-          <button onclick="addToCart(${item.id})" class="bg-orange-500 text-white px-6 py-2 rounded-xl text-sm">Add</button>
         `;
         container.appendChild(div);
       });
@@ -168,32 +133,20 @@ to<!DOCTYPE html>
 
     function addToCart(id) {
       const item = menuItems.find(i => i.id === id);
-      cart.push(item);
+      const existing = cart.find(c => c.id === id);
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+      } else {
+        cart.push({...item, quantity: 1});
+      }
       localStorage.setItem('cart', JSON.stringify(cart));
-      alert(`${item.name} added to cart!`);
+      alert(`${item.name} added (quantity updated)`);
     }
 
-    function renderCart() {
-      const container = document.getElementById('cart-list');
-      container.innerHTML = '';
-      let total = 0;
-      cart.forEach((item, index) => {
-        total += item.price;
-        const div = document.createElement('div');
-        div.className = 'flex justify-between items-center bg-white p-4 rounded-2xl mb-3 shadow';
-        div.innerHTML = `
-          <div class="flex-1">
-            <h3 class="font-medium">${item.name}</h3>
-            <p class="text-orange-600 font-bold">₦${item.price}</p>
-          </div>
-          <button onclick="removeFromCart(${index})" 
-                  class="bg-red-500 text-white px-6 py-3 rounded-xl text-sm font-medium">
-            Remove
-          </button>
-        `;
-        container.appendChild(div);
-      });
-      document.getElementById('total').textContent = `₦${total}`;
+    function changeQuantity(index, change) {
+      cart[index].quantity = Math.max(1, (cart[index].quantity || 1) + change);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
     }
 
     function removeFromCart(index) {
@@ -201,12 +154,39 @@ to<!DOCTYPE html>
       cart.splice(index, 1);
       localStorage.setItem('cart', JSON.stringify(cart));
       renderCart();
-      alert(`${removed.name} has been removed from your cart`);
+      alert(`${removed.name} removed from cart`);
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cart-list');
+      container.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const qty = item.quantity || 1;
+        total += item.price * qty;
+        const div = document.createElement('div');
+        div.className = 'bg-white p-4 rounded-2xl shadow flex justify-between items-center';
+        div.innerHTML = `
+          <div class="flex-1">
+            <h3 class="font-medium">${item.name}</h3>
+            <p class="text-orange-600 font-bold">₦${item.price} × ${qty}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="changeQuantity(${index}, -1)" class="w-8 h-8 bg-gray-200 rounded-full">-</button>
+            <span class="font-medium">${qty}</span>
+            <button onclick="changeQuantity(${index}, 1)" class="w-8 h-8 bg-gray-200 rounded-full">+</button>
+            <button onclick="removeFromCart(${index})" class="bg-red-500 text-white px-4 py-2 rounded-xl text-sm">Remove</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      document.getElementById('total').textContent = `₦${total}`;
     }
 
     function checkout() {
       if (cart.length === 0) return alert("Your cart is empty");
-      alert("✅ Paystack opened!\n\nTest payment successful!\nYour order has been placed.");
+      window.open('https://paystack.com/demo/checkout', '_blank');
+      alert("Paystack demo opened in new tab.\n\nTest a payment there.\n\nYour order has been placed!");
       document.getElementById('order-number').textContent = "MK-" + Math.floor(1000 + Math.random() * 9000);
       cart = [];
       localStorage.setItem('cart', JSON.stringify(cart));
@@ -223,7 +203,10 @@ to<!DOCTYPE html>
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      if (id === 'menu') renderMenu();
+      if (id === 'menu') {
+        filterCategory('all');
+        renderMenu();
+      }
       if (id === 'cart') renderCart();
     }
   </script>
